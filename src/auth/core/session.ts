@@ -1,16 +1,12 @@
-import redis from "@/lib/redis";
 import crypto from "crypto";
-import { SESSION_COOKIE_NAME, SESSION_EXPIRATION_TIME } from "./data";
-import {
-  UserSession as UserSession,
-  userSessionSchema as userSessionSchema,
-} from "./schema";
-import { Cookies as Cookies } from "./type";
+import { SESSION_COOKIE_NAME } from "./data";
+import { UserSession, userSessionSchema } from "./schema";
 import {
   deleteUserSessionById,
   setCookie,
   setUserSessionById,
 } from "./session-edge";
+import { Cookies } from "./type";
 
 export const createUserSession = async (
   userSession: UserSession,
@@ -32,16 +28,16 @@ export const createUserSession = async (
 };
 
 export const deleteSession = async (
-  cookie: Pick<Cookies, "delete" | "get">
+  cookies: Pick<Cookies, "delete" | "get">
 ) => {
-  const sessionId = cookie.get(SESSION_COOKIE_NAME)?.value;
+  const sessionId = cookies.get(SESSION_COOKIE_NAME)?.value;
 
   if (!sessionId) {
     return;
   }
 
   await deleteUserSessionById(sessionId);
-  cookie.delete(SESSION_COOKIE_NAME);
+  cookies.delete(SESSION_COOKIE_NAME);
 };
 
 export const updateUserSessionData = async (

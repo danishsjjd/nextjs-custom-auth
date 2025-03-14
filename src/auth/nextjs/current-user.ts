@@ -6,24 +6,25 @@ import { redirect } from "next/navigation";
 import { InferSelectModel } from "drizzle-orm";
 import { UserSession } from "../core/schema";
 import { getUserFromSession } from "../core/session-edge";
+import { cache } from "react";
 
-export function getCurrentUser({}: {
+function _getCurrentUser({}: {
   withFullUser?: false;
   redirectIfNotAuthenticated?: false;
 }): Promise<UserSession | null>;
-export function getCurrentUser({}: {
+function _getCurrentUser({}: {
   withFullUser?: false;
   redirectIfNotAuthenticated?: true;
 }): Promise<UserSession>;
-export function getCurrentUser({}: {
+function _getCurrentUser({}: {
   withFullUser?: true;
   redirectIfNotAuthenticated?: false;
 }): Promise<InferSelectModel<typeof usersTable> | null>;
-export function getCurrentUser({}: {
+function _getCurrentUser({}: {
   withFullUser?: true;
   redirectIfNotAuthenticated?: true;
 }): Promise<InferSelectModel<typeof usersTable>>;
-export async function getCurrentUser({
+async function _getCurrentUser({
   withFullUser = false,
   redirectIfNotAuthenticated = false,
 }: {
@@ -50,3 +51,5 @@ export async function getCurrentUser({
 
   return session;
 }
+
+export const getCurrentUser = cache(_getCurrentUser);

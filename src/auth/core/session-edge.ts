@@ -3,8 +3,8 @@ import { SESSION_COOKIE_NAME, SESSION_EXPIRATION_TIME } from "./data";
 import { UserSession, userSessionSchema } from "./schema";
 import { Cookies } from "./type";
 
-export const getUserFromSession = async (cookie: Pick<Cookies, "get">) => {
-  const sessionId = cookie.get(SESSION_COOKIE_NAME)?.value;
+export const getUserFromSession = async (cookies: Pick<Cookies, "get">) => {
+  const sessionId = cookies.get(SESSION_COOKIE_NAME)?.value;
 
   if (!sessionId) {
     return null;
@@ -26,8 +26,9 @@ export async function updateUserSessionExpiration(
   await setUserSessionById(sessionId, user);
   setCookie(sessionId, cookies);
 }
-export const setCookie = (sessionId: string, cookie: Pick<Cookies, "set">) => {
-  cookie.set(SESSION_COOKIE_NAME, sessionId, {
+
+export const setCookie = (sessionId: string, cookies: Pick<Cookies, "set">) => {
+  cookies.set(SESSION_COOKIE_NAME, sessionId, {
     httpOnly: true,
     secure: true,
     maxAge: SESSION_EXPIRATION_TIME,
