@@ -1,7 +1,11 @@
 "use server";
 
 import { db } from "@/drizzle";
-import { generateSalt, hashPassword } from "../core/password-hasher";
+import {
+  generateSalt,
+  hashPassword,
+  verifyPassword,
+} from "../core/password-hasher";
 import {
   signInSchema,
   SignInSchema,
@@ -10,19 +14,9 @@ import {
 } from "./schemas";
 import { usersTable } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
-import { createSession } from "../core/session";
+import { createUserSession, deleteSession } from "../core/session";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-
-export async function signIn(formData: SignInSchema) {
-  const { success, data } = signInSchema.safeParse(formData);
-
-  if (!success) {
-    return "Unprocessable Content";
-  }
-
-  return "Work in Progress";
-}
 
 export async function signUp(formData: SignUpSchema) {
   const { success, data } = signUpSchema.safeParse(formData);
@@ -58,7 +52,7 @@ export async function signUp(formData: SignUpSchema) {
       })
       .returning({ id: usersTable.id, role: usersTable.role });
 
-    await createSession(user, await cookies());
+    await createUserSession(user, await cookies());
 
     redirect("/");
   } catch {
@@ -66,8 +60,40 @@ export async function signUp(formData: SignUpSchema) {
   }
 }
 
-export async function logOut() {
-  console.log("logOut");
+export async function signIn(formData: SignInSchema) {
+  const { success, data } = signInSchema.safeParse(formData);
 
-  return "Work in Progress";
+  if (!success) {
+    return "Unprocessable Content";
+  }
+
+  const { email, password } = data;
+
+  const user = await db.query.usersTable.findFirst({
+    where: eq(usersTable.email, email),
+  });
+
+  if (user == null) {
+    return "Invalid credentials";
+  }
+
+  const isPasswordValid = await verifyPassword(
+    password,
+    user.password,
+    user.salt
+  );
+
+  if (!isPasswordValid) {
+    return "Invalid credentials";
+  }
+
+  await createUserSession(user, await cookies());
+
+  redirect("/");
+}
+
+export async function logOut() {
+  await deleteSession(await cookies());
+
+  redirect("/sign-in");
 }

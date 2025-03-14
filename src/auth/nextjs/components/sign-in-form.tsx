@@ -19,6 +19,7 @@ import { useState } from "react";
 import { signIn } from "../actions";
 
 const SignInForm = () => {
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof signInSchema>>({
@@ -30,8 +31,10 @@ const SignInForm = () => {
   });
 
   const onSubmit = async (data: z.infer<typeof signInSchema>) => {
+    setLoading(true);
     const error = await signIn(data);
     setError(error);
+    setLoading(false);
   };
 
   return (
@@ -67,7 +70,9 @@ const SignInForm = () => {
           <Button asChild variant="link">
             <Link href="/sign-up">Sign Up</Link>
           </Button>
-          <Button type="submit">Sign In</Button>
+          <Button type="submit" disabled={loading}>
+            {loading ? "Signing In..." : "Sign In"}
+          </Button>
         </div>
       </form>
     </Form>

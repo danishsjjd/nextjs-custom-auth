@@ -1,67 +1,62 @@
-import { userRole } from "@/drizzle/schema";
 import redis from "@/lib/redis";
 import crypto from "crypto";
-import { z } from "zod";
+import { SESSION_COOKIE_NAME, SESSION_EXPIRATION_TIME } from "./data";
+import {
+  UserSession as UserSession,
+  userSessionSchema as userSessionSchema,
+} from "./schema";
+import { Cookies as Cookies } from "./type";
+import {
+  deleteUserSessionById,
+  setCookie,
+  setUserSessionById,
+} from "./session-edge";
 
-const SESSION_EXPIRATION_TIME = 60 * 60 * 24 * 7; // 7 days
-const SESSION_COOKIE_NAME = "sessionId";
-
-const sessionUserSchema = z.object({
-  id: z.string(),
-  role: z.enum(userRole),
-});
-
-type SessionUser = z.infer<typeof sessionUserSchema>;
-
-type Cookie = {
-  get: (name: string) => string | undefined;
-  set: (
-    name: string,
-    value: string,
-    options?: Partial<{
-      httpOnly: boolean;
-      secure: boolean;
-      maxAge: number;
-      path: string;
-      sameSite: "lax" | "strict" | "none";
-    }>
-  ) => void;
-  delete: (name: string) => void;
-};
-
-export const createSession = async (
-  sessionUser: SessionUser,
-  cookie: Pick<Cookie, "set">
+export const createUserSession = async (
+  userSession: UserSession,
+  cookies: Pick<Cookies, "set">
 ) => {
-  const { success, data } = sessionUserSchema.safeParse(sessionUser);
+  const { success, data } = userSessionSchema.safeParse(userSession);
 
   if (!success) {
     throw new Error("Invalid session user");
   }
 
-  const sessionId = generateSessionId();
+  const sessionId = await generateSessionId();
 
-  await redis.set(
-    `session:${sessionId}`,
-    JSON.stringify(data),
-    "EX",
-    SESSION_EXPIRATION_TIME
-  );
+  await setUserSessionById(sessionId, userSession);
 
-  setCookie(sessionId, cookie);
+  setCookie(sessionId, cookies);
 
   return sessionId;
 };
 
-export const generateSessionId = () => {
-  return crypto.randomBytes(512).toString("hex").normalize();
+export const deleteSession = async (
+  cookie: Pick<Cookies, "delete" | "get">
+) => {
+  const sessionId = cookie.get(SESSION_COOKIE_NAME)?.value;
+
+  if (!sessionId) {
+    return;
+  }
+
+  await deleteUserSessionById(sessionId);
+  cookie.delete(SESSION_COOKIE_NAME);
 };
 
-export const setCookie = (sessionId: string, cookie: Pick<Cookie, "set">) => {
-  cookie.set(SESSION_COOKIE_NAME, sessionId, {
-    httpOnly: true,
-    secure: true,
-    maxAge: SESSION_EXPIRATION_TIME,
-    sameSite: "lax",
-  });
+export const updateUserSessionData = async (
+  userSession: UserSession,
+  cookies: Pick<Cookies, "set" | "get">
+) => {
+  const sessionId = cookies.get(SESSION_COOKIE_NAME)?.value;
+
+  if (!sessionId) {
+    return;
+  }
+
+  await setUserSessionById(sessionId, userSession);
+};
+
+export const generateSessionId = async () => {
+  return crypto.randomBytes(512).toString("hex").normalize();
 };

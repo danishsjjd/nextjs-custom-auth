@@ -14,7 +14,7 @@ import Link from "next/link";
 
 function SignUpPage() {
   return (
-    <Card className="w-[350px]">
+    <Card>
       <CardHeader>
         <CardTitle>Sign Up</CardTitle>
         <CardDescription>Create your account to continue.</CardDescription>

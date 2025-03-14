@@ -15,3 +15,15 @@ export const hashPassword = (password: string, salt: string) => {
 export const generateSalt = () => {
   return crypto.randomBytes(16).toString("hex").normalize();
 };
+
+export const verifyPassword = async (
+  password: string,
+  hashedPassword: string,
+  salt: string
+) => {
+  const hashedInput = await hashPassword(password, salt);
+  return crypto.timingSafeEqual(
+    Buffer.from(hashedInput),
+    Buffer.from(hashedPassword)
+  );
+};

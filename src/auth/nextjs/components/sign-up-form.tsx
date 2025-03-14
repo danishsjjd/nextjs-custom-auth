@@ -20,7 +20,7 @@ import { useState } from "react";
 
 const SignUpForm = () => {
   const [error, setError] = useState<string | null>(null);
-
+  const [loading, setLoading] = useState(false);
   const form = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
@@ -31,8 +31,10 @@ const SignUpForm = () => {
   });
 
   const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
+    setLoading(true);
     const error = await signUp(data);
     setError(error);
+    setLoading(false);
   };
 
   return (
@@ -79,7 +81,9 @@ const SignUpForm = () => {
           <Button asChild variant="link">
             <Link href="/sign-in">Sign In</Link>
           </Button>
-          <Button type="submit">Sign Up</Button>
+          <Button type="submit" disabled={loading}>
+            {loading ? "Signing Up..." : "Sign Up"}
+          </Button>
         </div>
       </form>
     </Form>

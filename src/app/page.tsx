@@ -8,17 +8,18 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 import LogoutButton from "@/auth/nextjs/components/logout-button";
+import { getCurrentUser } from "@/auth/nextjs/current-user";
 
-export default function Home() {
-  const fullUser = null;
-  // TODO!: Get user from server
-  // const fullUser = { id: "", name: "Danish", role: "user" };
+export default async function Home() {
+  const fullUser = await getCurrentUser({
+    withFullUser: true,
+  });
 
   if (fullUser) {
     return (
-      <Card className="w-[350px]">
+      <Card>
         <CardHeader>
-          <CardTitle>User: {fullUser.name}</CardTitle>
+          <CardTitle>User: {fullUser.id}</CardTitle>
           <CardDescription>Role: {fullUser.role}</CardDescription>
         </CardHeader>
         <CardFooter className="flex gap-4">
