@@ -1,5 +1,5 @@
 import { db } from "@/drizzle";
-import { usersTable } from "@/drizzle/schema";
+import { UserTable } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -19,11 +19,11 @@ function _getCurrentUser({}: {
 function _getCurrentUser({}: {
   withFullUser?: true;
   redirectIfNotAuthenticated?: false;
-}): Promise<InferSelectModel<typeof usersTable> | null>;
+}): Promise<InferSelectModel<typeof UserTable> | null>;
 function _getCurrentUser({}: {
   withFullUser?: true;
   redirectIfNotAuthenticated?: true;
-}): Promise<InferSelectModel<typeof usersTable>>;
+}): Promise<InferSelectModel<typeof UserTable>>;
 async function _getCurrentUser({
   withFullUser = false,
   redirectIfNotAuthenticated = false,
@@ -42,8 +42,8 @@ async function _getCurrentUser({
   }
 
   if (withFullUser) {
-    const user = await db.query.usersTable.findFirst({
-      where: eq(usersTable.id, session.id),
+    const user = await db.query.UserTable.findFirst({
+      where: eq(UserTable.id, session.id),
     });
 
     return user;

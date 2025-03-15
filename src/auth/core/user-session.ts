@@ -67,10 +67,11 @@ export const setUserSessionById = async (
 };
 
 const getUserSessionById = async (sessionId: string) => {
-  console.log("redding from redis");
   const rawUser = await redis.get(`session:${sessionId}`);
 
   const { success, data } = userSessionSchema.safeParse(rawUser);
+
+  console.log("getUserSessionById", data);
 
   if (!success) {
     return null;

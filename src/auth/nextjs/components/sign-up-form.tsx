@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -11,16 +12,16 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { signUpSchema } from "../schemas";
-import { signUp } from "../actions";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { signUp } from "../actions";
+import { signUpSchema } from "../schemas";
 
 const SignUpForm = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
   const form = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
