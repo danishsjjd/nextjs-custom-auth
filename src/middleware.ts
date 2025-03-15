@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getUserFromSession } from "./auth/core/session-edge";
-import { updateUserSessionExpiration } from "./auth/core/session-edge";
+import {
+  getUserFromSession,
+  updateUserSessionData,
+} from "./auth/core/user-session";
 
 const privateRoutes = ["/private"];
 const adminRoutes = ["/admin"];
@@ -36,12 +38,16 @@ async function middlewareAuth(request: NextRequest) {
   }
 
   if (user) {
-    await updateUserSessionExpiration(user, {
-      set: (key, value, options) => {
-        response?.cookies.set({ ...options, name: key, value });
+    await updateUserSessionData(
+      user,
+      {
+        set: (key, value, options) => {
+          response?.cookies.set({ ...options, name: key, value });
+        },
+        get: (key) => request.cookies.get(key),
       },
-      get: (key) => request.cookies.get(key),
-    });
+      true
+    );
   }
 
   console.log("middleware", user);

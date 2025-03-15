@@ -13,19 +13,36 @@ export const getUserFromSession = async (cookies: Pick<Cookies, "get">) => {
   return getUserSessionById(sessionId);
 };
 
-export async function updateUserSessionExpiration(
-  user: UserSession,
-  cookies: Pick<Cookies, "get" | "set">
-) {
+export const updateUserSessionData = async (
+  userSession: UserSession,
+  cookies: Pick<Cookies, "set" | "get">,
+  updateSessionExpiration = false
+) => {
   const sessionId = cookies.get(SESSION_COOKIE_NAME)?.value;
 
   if (!sessionId) {
     return;
   }
 
-  await setUserSessionById(sessionId, user);
-  setCookie(sessionId, cookies);
-}
+  await setUserSessionById(sessionId, userSession);
+
+  if (updateSessionExpiration) {
+    setCookie(sessionId, cookies);
+  }
+};
+
+export const deleteUserSession = async (
+  cookies: Pick<Cookies, "delete" | "get">
+) => {
+  const sessionId = cookies.get(SESSION_COOKIE_NAME)?.value;
+
+  if (!sessionId) {
+    return;
+  }
+
+  await deleteUserSessionById(sessionId);
+  cookies.delete(SESSION_COOKIE_NAME);
+};
 
 export const setCookie = (sessionId: string, cookies: Pick<Cookies, "set">) => {
   cookies.set(SESSION_COOKIE_NAME, sessionId, {
@@ -62,6 +79,6 @@ const getUserSessionById = async (sessionId: string) => {
   return data;
 };
 
-export const deleteUserSessionById = async (sessionId: string) => {
+const deleteUserSessionById = async (sessionId: string) => {
   await redis.del(`session:${sessionId}`);
 };

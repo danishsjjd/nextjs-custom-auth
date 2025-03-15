@@ -14,9 +14,10 @@ import {
 } from "./schemas";
 import { usersTable } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
-import { createUserSession, deleteSession } from "../core/session";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { createUserSession } from "../core/user-session-create";
+import { deleteUserSession } from "../core/user-session";
 
 export async function signUp(formData: SignUpSchema) {
   const { success, data } = signUpSchema.safeParse(formData);
@@ -53,11 +54,11 @@ export async function signUp(formData: SignUpSchema) {
       .returning({ id: usersTable.id, role: usersTable.role });
 
     await createUserSession(user, await cookies());
-
-    redirect("/");
   } catch {
     return "Unable to create account";
   }
+
+  redirect("/");
 }
 
 export async function signIn(formData: SignInSchema) {
@@ -93,7 +94,7 @@ export async function signIn(formData: SignInSchema) {
 }
 
 export async function logOut() {
-  await deleteSession(await cookies());
+  await deleteUserSession(await cookies());
 
   redirect("/sign-in");
 }

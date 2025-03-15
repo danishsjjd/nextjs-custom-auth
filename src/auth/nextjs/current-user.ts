@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { InferSelectModel } from "drizzle-orm";
 import { UserSession } from "../core/schema";
-import { getUserFromSession } from "../core/session-edge";
+import { getUserFromSession } from "../core/user-session";
 import { cache } from "react";
 
 function _getCurrentUser({}: {

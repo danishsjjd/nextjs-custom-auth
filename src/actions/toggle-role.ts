@@ -1,6 +1,6 @@
 "use server";
 
-import { updateUserSessionData } from "@/auth/core/session";
+import { updateUserSessionData } from "@/auth/core/user-session";
 import { getCurrentUser } from "@/auth/nextjs/current-user";
 import { db } from "@/drizzle";
 import { usersTable } from "@/drizzle/schema";
